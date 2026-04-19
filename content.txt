@@ -1,301 +1,118 @@
-User Story: Boarding Intake Record Creation and Processing
+User Story: Ensure Compatibility with Existing Integrations During Boarding Intake Implementation
 Story Goal
-To enable seamless creation, submission, and processing of Boarding Intake records with automated downstream record creation, field auto-population, and controlled user interactions to support efficient onboarding and maintenance workflows.
+
+To ensure that the new Boarding Intake implementation seamlessly coexists with existing system integrations without impacting their current functionality, validations, or data flows.
 
 Description
-As a Service/Operations Agent
-I want to create and submit a Boarding Intake record (manually or via Adobe form integration) with all required details and system-driven automation
-In order to ensure accurate onboarding/maintenance processing, automatic record creation, and consistent data flow across related objects in Salesforce
+
+As a System Administrator / Business Stakeholder
+I want the new Boarding Intake solution to retain and support all existing integrations without any regression
+In order to ensure business continuity, data integrity, and uninterrupted system operations across integrated platforms
 
 Dependencies
-
-
-Adobe Form to Salesforce (SF) integration for intake record creation
-
-
-Salesforce object configuration:
-
-
-Boarding Intake
-
-
-Case (Canada Boarding Request)
-
-
-Boarding Detail (New FID / Product Change Activation - CAN)
-
-
-Boarding Product
-
-
-Boarding Reference FID
-
-
-Boarding Account
-
-
-
-
-Record Types configuration:
-
-
-Canada Onboarding (default for Boarding Intake)
-
-
-Canada Boarding Request (Case)
-
-
-New FID / Product Change Activation - CAN
-
-
-
-
-Field mapping and auto-population logic across objects
-
-
-User access configuration (Profiles, Roles, Users)
-
-
-UI configuration for dynamic field visibility and buttons
-
-
-
+Existing integrations:
+Minerva
+C2O (for Mirror FID processing)
+Entitlement Master
+Existing validation logic:
+C2O validation for Mirror FID (Status validation at case submission)
+API interfaces and middleware (if applicable)
+Current data mappings and transformation rules
+Regression testing framework
 Business Impact
-
-
-Ensures standardized onboarding and maintenance processes
-
-
-Reduces manual effort through automation and field propagation
-
-
-Improves data accuracy and consistency across systems
-
-
-Enables faster case creation and processing
-
-
-Enhances operational efficiency and reduces processing delays
-
-
-
+Prevents disruption to critical downstream and upstream systems
+Ensures continuity of onboarding and maintenance workflows
+Maintains compliance with existing validation and entitlement rules
+Avoids operational and financial risks caused by integration failures
 Benefits
-
-
-Automated record creation reduces manual dependency
-
-
-Improved user experience with guided intake forms
-
-
-Dynamic field visibility ensures relevant data capture
-
-
-Multi-product handling improves flexibility
-
-
-Controlled submission prevents data inconsistency
-
-
-Centralized customization handling ensures better tracking
-
-
-
+Zero regression on existing integrations
+Stable and predictable system behavior
+Improved stakeholder confidence in new implementation
+Reduced rework and incident management
+Seamless coexistence of new and legacy processes
 Acceptance Criteria
-1. Boarding Intake Record Creation
-Given an agent clicks “New” on Boarding Intake OR an Adobe form is submitted
-When the record is created
-Then a Boarding Intake record should be automatically created in Salesforce
-And record type should default to Canada Onboarding
-And data should flow from Adobe form (if applicable)
+1. Preservation of Existing Integration Functionality
 
-2. Record Storage and Initial Population
-Given the Boarding Intake record is created
-When the record is saved
-Then it should be stored under the Boarding Intake tab
-And fields should be auto-populated based on source (Adobe/manual)
+Given existing integrations are active in the system
+When the new Boarding Intake functionality is implemented
+Then all existing integrations should continue to function without any impact
+And there should be no change in existing data flows, triggers, or responses
 
-3. Submit Button Functionality
-Given the agent clicks the “Submit” button
-When submission is completed
-Then the following records should be automatically created:
+2. Minerva Integration
 
+Given Minerva integration is currently operational
+When Boarding Intake records are created or submitted
+Then Minerva integration should continue to process data as per existing logic
+And no data loss, duplication, or delay should occur
 
-Case (Canada Boarding Request)
+3. C2O Integration for Mirror FID
 
+Given C2O integration is used for Mirror FID processing
+When a record involves Mirror FID scenarios
+Then the integration should be triggered as per existing configuration
+And processing should remain unchanged
 
-Boarding Detail (New FID / Product Change Activation - CAN)
+4. Entitlement Master Integration
 
+Given Entitlement Master integration is active
+When Boarding Intake or related records are processed
+Then entitlement checks and data synchronization should continue without any change
+And entitlement data should remain accurate and consistent
 
-Boarding Product
+5. C2O Validation for Mirror FID (Status Validation)
 
+Given a case involves Mirror FID
+When the case is submitted
+Then C2O validation should validate the Status field as per existing rules
+And submission should be restricted if validation fails
+And appropriate error messages should be displayed
 
-Boarding Reference FID
+6. No Impact on Existing APIs and Data Contracts
 
+Given existing APIs and integration endpoints are configured
+When Boarding Intake changes are deployed
+Then there should be no modification to existing API contracts, request/response structures
+And backward compatibility must be maintained
 
-Boarding Account
+7. Data Consistency Across Systems
 
+Given data is exchanged between Salesforce and integrated systems
+When records are created/updated via Boarding Intake
+Then data should remain consistent across all systems
+And no mismatch or data integrity issues should occur
 
+8. Regression Validation
 
-4. Field Auto-Population Across Objects
-Given the Boarding Intake record is submitted
-When records are created
-Then:
+Given existing integrations are validated through testing
+When regression testing is performed
+Then all integration scenarios should pass without defects
+And previously working scenarios must continue to function as expected
 
+9. Error Handling and Logging
 
-Case Information fields should populate in Case
+Given integration failures occur
+When an error is triggered
+Then existing error handling mechanisms should continue to work
+And errors should be logged and traceable
+And no new failure points should be introduced
 
+10. Performance and Processing Time
 
-Boarding Detail fields should populate in Boarding Detail
+Given integrations are executed
+When Boarding Intake transactions occur
+Then there should be no degradation in performance or response time
+And processing timelines should remain within acceptable limits
 
+11. Security and Access Control
 
-Boarding Product fields should populate in Boarding Product
+Given integrations rely on authentication and authorization
+When new functionality is deployed
+Then existing security configurations should remain intact
+And no unauthorized access should be introduced
 
+12. End-to-End Integration Flow Validation
 
-Boarding Reference FID & Account fields should populate accordingly
-
-
-
-5. Record Type Defaults
-Given downstream records are created
-When records are initialized
-Then:
-
-
-Case should have record type Canada Boarding Request
-
-
-Boarding Detail should have record type New FID / Product Change Activation - CAN
-
-
-
-6. Status Synchronization
-Given a Boarding Intake record has a Status
-When the record is submitted
-Then the same Status should be reflected on the Case record
-
-7. Ownership Propagation
-Given a Boarding Intake record has an owner
-When the Case is created
-Then the Case should inherit the same ownership
-
-8. Field Visibility Rules
-Given specific field conditions
-When the page is loaded
-Then:
-
-
-Abandoned Reason should be visible only when Status = Abandoned
-
-
-Permissible Purpose visible only when Case Type = Onboarding
-
-
-Maintenance-related fields visible only when Case Type = Maintenance and Cause = Mirror FID
-
-
-Fulfillment ID should NOT be visible when Case Type = Onboarding
-
-
-
-9. Field Renaming
-Given the page layout is configured
-When fields are displayed
-Then:
-
-
-Account Name → GTM Account Name
-
-
-CIS Account Type → Account Type
-
-
-Bill To Name → BILL-TO INVOICE NAME
-
-
-Account → Location Account
-
-
-
-10. Customization Handling
-Given user selects customization values
-When data is entered
-Then system should provide:
-
-
-Multi-select field for Customization
-
-
-Multi-select field for Customization Codes
-
-
-Conditional multi-select field for MRUL (if MRUL selected)
-
-
-Consolidated text field
-
-
-And consolidated field should:
-
-
-Capture all customization codes
-
-
-Store in single string format
-
-
-Use delimiter (e.g., semicolon)
-
-
-
-11. Multiple Product Selection
-Given agent is working on Boarding Intake
-When agent clicks “Add Product”
-Then a new Product field should appear
-And agent should be able to search and add multiple products
-
-12. Submit vs Save as Draft
-Given user is on Boarding Intake page
-When user clicks:
-
-
-Submit → record should process and create downstream records
-
-
-Save as Draft → record should save without triggering automation
-
-
-
-13. Post-Submission Behavior
-Given the record is submitted
-When submission is completed
-Then the record should become non-editable
-
-14. Access Control
-Given users are configured in Users, Profiles, Roles
-When accessing Boarding Intake
-Then they should have visibility and edit access
-
-15. UI Layout Sections
-Given the Boarding Intake page
-When displayed
-Then it should include:
-
-
-Case Information
-
-
-Boarding Detail
-
-
-Boarding Product
-
-
-Boarding Reference FID & Boarding Account
-
-
-System Information
-
-
-
-If you want, I can also break this into multiple smaller Jira stories or epics (recommended for implementation) or convert this into Jira-ready format with labels, story points, and subtasks.
+Given a complete onboarding or maintenance scenario
+When data flows through all integrated systems
+Then the end-to-end process should execute successfully
+And all dependent systems should reflect correct and expected data
