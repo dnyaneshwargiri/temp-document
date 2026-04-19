@@ -1,172 +1,69 @@
-User Story: Manual Creation of Boarding Intake Record in Salesforce
-Story Goal
+To ensure successful creation of Boarding Intake records from Adobe-generated cases even when mandatory fields are missing, by bypassing standard validation rules exclusively for Adobe-originated records, thereby maintaining uninterrupted intake processing and integration continuity.
 
-To enable agents to manually create Boarding Intake records with default configurations, simplified navigation, and automatic ownership assignment to ensure efficient and error-free intake processing.
+Acceptance Criteria: Mandatory Field Bypass for Adobe-Based Case Creation
+1. Bypass Mandatory Validation for Adobe Records
 
-Description
+Given a Boarding Intake record is created via Adobe form integration
+When mandatory fields do not have values at the time of record creation
+Then the system should bypass mandatory field validations
+And the Boarding Intake record should still be created successfully
 
-As a Service/Operations Agent
-I want to create a Boarding Intake record directly using the “New” button with predefined defaults and ownership
-In order to streamline manual intake creation, eliminate unnecessary steps, and ensure accurate ownership and data capture
+2. Restriction of Bypass to Adobe Source Only
 
-Dependencies
-Salesforce Boarding Intake object configuration
-Record Type configuration:
-Default: Canada Onboarding
-Page layout configuration (all sections and fields)
-Field-level validations and dynamic visibility rules
-Button configuration:
-New
-Submit
-Save as Draft
-User access via Profiles, Roles, Permissions
-Integration readiness (Minerva, C2O, Entitlement Master – no impact)
-Business Impact
-Eliminates additional user steps (record type selection screen)
-Improves speed and efficiency of manual record creation
-Ensures correct record type usage across all manual entries
-Maintains clear ownership for accountability and processing
-Benefits
-Faster record creation with reduced clicks
-Improved user experience through direct navigation
-Accurate ownership assignment reduces routing issues
-Standardization of onboarding record creation
-Reduced risk of incorrect record type selection
-Acceptance Criteria
-1. Access to Create Record
+Given a Boarding Intake record is being created
+When the source of creation is Adobe
+Then mandatory field validation should be bypassed
 
-Given the agent has required permissions
-When the agent navigates to the Boarding Intake tab
-Then the “New” button should be visible
-And the agent should be able to initiate record creation
+And Given a Boarding Intake record is created manually
+When mandatory fields are missing
+Then the system should enforce mandatory field validations
+And prevent record creation
 
-2. Direct Record Creation Without Record Type Selection
+3. Source Identification Logic
 
-Given the agent clicks on the “New” button
-When the system processes the request
-Then the user should be redirected directly to the Boarding Intake creation page
-And the record type selection screen should NOT be displayed
+Given a Boarding Intake record is created
+When the system identifies the source as Adobe integration
+Then it should apply bypass logic for mandatory fields
+And ensure correct source tagging for the record
 
-3. Default Record Type Assignment
+4. Data Integrity Handling for Missing Fields
 
-Given a manual Boarding Intake record is being created
-When the record creation page is opened
-Then the record type should be automatically set to Canada Onboarding
-And the user should not be able to change it during creation
+Given mandatory fields are bypassed for Adobe records
+When the record is created
+Then missing fields should remain blank or defaulted as per configuration
+And no incorrect or dummy data should be populated
 
-4. Owner Assignment for Manual Records
+5. No Impact on Downstream Processing
 
-Given a Boarding Intake record is created manually
-When the record is saved
-Then the record owner should default to the user who created the record
-And no additional assignment logic should override this behavior
+Given a Boarding Intake record is created with missing mandatory fields via Adobe
+When downstream records (Case, Boarding Detail, etc.) are created
+Then the system should handle missing values gracefully
+And should not fail the process due to missing mandatory fields
 
-5. Page Layout Visibility
+6. Validation Enforcement Post-Creation (if applicable)
 
-Given the record creation page is loaded
-When the user views the page
-Then all required sections should be visible:
+Given a Boarding Intake record was created via Adobe with missing fields
+When an agent attempts to update or submit the record
+Then standard validations may be enforced (if defined)
+And the user may be required to complete missing mandatory fields before submission
 
-Case Information
-Boarding Detail
-Boarding Product
-Boarding Reference FID & Boarding Account
-System Information
-6. Field Renaming and Availability
+7. Error Handling for Integration Flow
 
-Given fields are displayed on the page
-When the user views the form
-Then fields should reflect updated labels:
+Given Adobe integration sends incomplete data
+When the system processes the record
+Then the record should still be created successfully
+And no integration failure should occur due to missing mandatory fields
 
-Account Name → GTM Account Name
-CIS Account Type → Account Type
-Bill To Name → BILL-TO INVOICE NAME
-Account → Location Account
-7. Mandatory Field Validation
+8. Audit and Traceability
 
-Given required fields are not completed
-When the user attempts to save or submit
-Then the system should prevent the action
-And display appropriate validation messages
+Given a record is created bypassing mandatory validation
+When the record is stored
+Then the system should maintain traceability indicating it was created via Adobe
+And audit logs should capture the bypass event
 
-8. Dynamic Field Visibility
+9. Consistency with Existing Integrations
 
-Given field visibility depends on conditions
-When conditions are met
-Then:
-
-Abandoned Reason visible only when Status = Abandoned
-Permissible Purpose visible only when Case Type = Onboarding
-Maintenance-related fields visible only when Case Type = Maintenance and Cause = Mirror FID
-Fulfillment ID should not be visible when Case Type = Onboarding
-9. Data Entry and Persistence
-
-Given the user enters data across sections
-When the record is saved
-Then all values should persist correctly
-And no data loss should occur
-
-10. Product Addition Functionality
-
-Given the user wants to add products
-When the user clicks “Add Product”
-Then a product selection field should appear
-And the user should be able to search and select products
-
-11. Multiple Product Handling
-
-Given multiple products are required
-When the user adds more products
-Then the system should allow multiple product entries
-And each entry should be captured independently
-
-12. Customization Handling
-
-Given the user selects customization values
-When data is entered
-Then:
-
-Customization and Customization Codes should be multi-select fields
-MRUL field should appear conditionally
-Consolidated field should store all values in delimited format
-13. Save as Draft Functionality
-
-Given the user is filling the form
-When the user clicks “Save as Draft”
-Then the record should be saved without triggering downstream processes
-And should remain editable
-
-14. Submit Functionality
-
-Given all required fields are completed
-When the user clicks “Submit”
-Then the system should validate data
-And proceed with submission
-
-15. Post-Submission Behavior
-
-Given the record is submitted
-When submission is successful
-Then the record should become non-editable
-And all fields should be read-only
-
-16. Integration Compatibility
-
-Given existing integrations are active
-When manual records are created
-Then integrations (Minerva, C2O, Entitlement Master) should not be impacted
-And existing functionality should remain unchanged
-
-17. Error Handling
-
-Given an error occurs during creation
-When the system detects the issue
-Then appropriate error messages should be shown
-And the user should be able to correct and proceed
-
-18. Performance
-
-Given the user creates or saves a record
-When the system processes the request
-Then response time should be within acceptable limits
-And user experience should not be degraded
+Given existing integrations (Minerva, C2O, Entitlement Master) are active
+When Adobe-based records are created with missing fields
+Then these integrations should continue functioning without impact
+And no regression should occur
