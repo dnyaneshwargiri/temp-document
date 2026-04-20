@@ -1,69 +1,143 @@
-To ensure successful creation of Boarding Intake records from Adobe-generated cases even when mandatory fields are missing, by bypassing standard validation rules exclusively for Adobe-originated records, thereby maintaining uninterrupted intake processing and integration continuity.
+User Story: Canada Boarding Request Case Creation & Validation
+Story Title
 
-Acceptance Criteria: Mandatory Field Bypass for Adobe-Based Case Creation
-1. Bypass Mandatory Validation for Adobe Records
+Canada Boarding Request – Controlled Case Creation, Field Behavior, and Validation Logic
 
-Given a Boarding Intake record is created via Adobe form integration
-When mandatory fields do not have values at the time of record creation
-Then the system should bypass mandatory field validations
-And the Boarding Intake record should still be created successfully
+Story Goal
 
-2. Restriction of Bypass to Adobe Source Only
+Enable standardized and controlled creation of Canada Boarding Request cases in Salesforce with predefined defaults, restricted record type visibility, conditional validations, and consistent field behavior for both Adobe-generated and manual cases, ensuring data integrity without blocking case creation.
 
-Given a Boarding Intake record is being created
-When the source of creation is Adobe
-Then mandatory field validation should be bypassed
+Description
 
-And Given a Boarding Intake record is created manually
+As a Canadian operations agent or system (Adobe integration),
+I want to create and manage cases using the Canada Boarding Request record type with predefined field behaviors, validations, and visibility rules,
+So that case creation is not blocked due to missing data initially, while ensuring required data is captured before submission and downstream processing.
+
+Business Impact
+Ensures uninterrupted case creation even when data is incomplete (critical for Adobe integration).
+Improves data quality and compliance through staged validation (creation vs submission).
+Standardizes Canada-specific case handling by restricting record types and defaulting key values.
+Reduces manual errors and inconsistencies via autopopulation and controlled field behavior.
+Supports downstream processing and integrations without impacting existing rules.
+Scope
+Applies to Case Object with Record Type: Canada Boarding Request
+Covers both:
+Adobe-generated cases
+Manually created cases by agents
+Dependencies
+Adobe Forms integration for autopopulation logic
+Queue assignment logic based on Adobe form name
+Existing Salesforce validation rules (Status transitions, C2O integration)
+Backend integration for Account (EFX ID creation)
+Field dependency configurations (Category → Case Type → Cause, BU hierarchy)
+Key Functional Requirements
+1. Record Type Control
+Only Canada Boarding Request record type should be visible to Canadian users.
+Default record type should be automatically assigned upon Boarding Intake submission.
+2. Case Creation Behavior
+Cases must be created successfully even if mandatory fields are not populated during:
+Adobe case creation
+Manual case creation
+Mandatory validations should be deferred until:
+Field edit OR
+Status change to Submitted
+3. Validation Logic
+For fields marked mandatory:
+At creation (Status = New):
+Do NOT block case creation
+At edit or submission:
+Show validation message: “Complete this field”
+Submission validation triggers when:
+Status is changed to Submitted
+4. Field Behavior & Defaults
+Status → Default: New
+Category → Default: Canada (non-editable)
+Business Unit → Default: Canada (system not visible)
+Relationship → Default: Direct Customer (conditional for reseller cases)
+Case Owner → Auto-assigned via queue (based on Adobe form)
+Account (GTM Account Name):
+Not mandatory at creation
+Populated via backend (EFX ID process)
+Subject → Auto-populated (Adobe) / Manual entry
+Case Type & Cause:
+Auto-populated (Adobe)
+Manual selection (agent)
+5. Field Visibility Rules
+System Visible → Read-only on UI
+System Not Visible → Hidden, populated in backend
+Conditional visibility:
+Abandoned Reason → Visible only when Status = Abandoned
+6. Status Control
+Allowed transitions follow existing rules
+Once status is Submitted or Completed:
+Cannot revert to:
+New
+Abandoned
+C2O FID Validate
+7. Field Dependencies
+Category → Case Type → Cause
+Business Unit → Business Unit Vertical → Sub-Vertical
+8. Special Logic
+System identifies source using Created By
+Distinguishes Adobe vs Manual
+Remove:
+Population Add Type field dependency
+Move related values into Cause field
+Acceptance Criteria
+AC1: Record Type Visibility
+Given a Canadian user
+When creating a case
+Then only Canada Boarding Request record type should be visible and selectable
+AC2: Case Creation Without Mandatory Fields
+Given a case is created via Adobe or manually
 When mandatory fields are missing
-Then the system should enforce mandatory field validations
-And prevent record creation
-
-3. Source Identification Logic
-
-Given a Boarding Intake record is created
-When the system identifies the source as Adobe integration
-Then it should apply bypass logic for mandatory fields
-And ensure correct source tagging for the record
-
-4. Data Integrity Handling for Missing Fields
-
-Given mandatory fields are bypassed for Adobe records
-When the record is created
-Then missing fields should remain blank or defaulted as per configuration
-And no incorrect or dummy data should be populated
-
-5. No Impact on Downstream Processing
-
-Given a Boarding Intake record is created with missing mandatory fields via Adobe
-When downstream records (Case, Boarding Detail, etc.) are created
-Then the system should handle missing values gracefully
-And should not fail the process due to missing mandatory fields
-
-6. Validation Enforcement Post-Creation (if applicable)
-
-Given a Boarding Intake record was created via Adobe with missing fields
-When an agent attempts to update or submit the record
-Then standard validations may be enforced (if defined)
-And the user may be required to complete missing mandatory fields before submission
-
-7. Error Handling for Integration Flow
-
-Given Adobe integration sends incomplete data
-When the system processes the record
-Then the record should still be created successfully
-And no integration failure should occur due to missing mandatory fields
-
-8. Audit and Traceability
-
-Given a record is created bypassing mandatory validation
-When the record is stored
-Then the system should maintain traceability indicating it was created via Adobe
-And audit logs should capture the bypass event
-
-9. Consistency with Existing Integrations
-
-Given existing integrations (Minerva, C2O, Entitlement Master) are active
-When Adobe-based records are created with missing fields
-Then these integrations should continue functioning without impact
-And no regression should occur
+Then the case should still be created successfully
+AC3: Deferred Validation on Edit
+Given a case with missing mandatory fields
+When an agent edits any field
+Then the system should display validation message “Complete this field”
+AC4: Submission Validation
+Given a case with missing mandatory submission fields
+When the agent changes status to Submitted
+Then the system should block submission and show “Complete this field”
+AC5: Default Field Values
+Given a new case is created
+When the case is saved
+Then default values should be set:
+Status = New
+Category = Canada
+Business Unit = Canada
+AC6: Adobe Autopopulation
+Given a case is created via Adobe
+When data is received from Adobe form
+Then fields like Case Type, Cause, Subject, BU Vertical should be auto-populated
+AC7: Manual Case Field Entry
+Given a case is created manually
+When agent fills details
+Then dependent fields should behave as per defined hierarchy
+AC8: Account Handling
+Given account does not exist at creation
+When case is created
+Then case should still be created without Account Name
+And Account will be populated later via backend process
+AC9: Status Restriction
+Given case status is Submitted or Completed
+When agent attempts to revert status
+Then system should prevent status change as per existing rules
+AC10: Conditional Field Visibility
+Given status is Abandoned
+When case is viewed
+Then Abandoned Reason field should be visible
+Benefits
+Prevents case creation failures due to incomplete data
+Ensures data completeness before submission
+Improves user experience for agents
+Maintains consistency across Adobe and manual flows
+Enables scalable and controlled onboarding process
+Additional Notes
+No changes required to existing:
+Status validation rules
+C2O integration logic
+Backend integrations (e.g., EFX ID for Account creation) are out of scope
+Technical review required for:
+Category field backend impact
